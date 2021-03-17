@@ -6,10 +6,9 @@ import YottaAPI from '../../../apis/yotta-api';
 import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import useCurrentSubjectDomainModel from '../../../models/current-subject-domain';
-import {drawTree,drawTreeNumber} from '../../../modules/facetTree';
+import {drawTreeNumber} from '../../../modules/facetTree';
 import {Card} from 'antd';
-import HTMLEllipsis from 'react-lines-ellipsis/lib/html'
-import Leaf from '../../../components/Leaf'
+
 
 const {confirm} = Modal;
 
@@ -141,7 +140,7 @@ function Assemble() {
         }
         fetchAssembleData();
         
-    },[currentTopic])
+    },[currentTopic,currentSubjectDomain])
    
     useEffect(() => {
         if (assembles ) {

@@ -85,6 +85,7 @@ function Relation() {
                 (res) => {
                     setmapdata(res.data);
                     if(res.data&&mapRef){
+                    console.log('res.data',res.data);
                     drawMap(res.data,mapRef.current,treeRef.current,currentSubjectDomain.domain,learningPath,() => {}, () => {});}
                 }
             )

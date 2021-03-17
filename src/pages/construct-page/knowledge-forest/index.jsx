@@ -9,7 +9,7 @@ import { useRef } from 'react';
 import Leaf from '../../../components/Leaf'
 function KnowledgeForest() {
     const {currentSubjectDomain} = useCurrentSubjectDomainModel();
-    const [mapdata,setmapdata] = useState();
+    // const [mapdata,setmapdata] = useState();
     const [learningPath,setlearningPath] = useState([]);
     const [currentTopic,setcurrentTopic] = useState('树状数组');
     const [assembles,setassembles] = useState();
@@ -39,7 +39,7 @@ function KnowledgeForest() {
         async function fetchDependencesMap(){
             await YottaAPI.getMap(currentSubjectDomain.domain).then(
                 (res) => {
-                    setmapdata(res.data);
+                    // setmapdata(res.data);
                     if(res.data&&mapRef){
                         drawMap(res.data,mapRef.current,treeRef.current,currentSubjectDomain.domain,learningPath,clickTopic, clickFacet);}
                 }

@@ -5,8 +5,8 @@ import useCurrentSubjectDomainModel from '../../../../../models/current-subject-
 import { useState } from 'react';
 import YottaAPI from '../../../../../apis/yotta-api';
 import {ExclamationCircleOutlined,PlusOutlined} from '@ant-design/icons';
-import { Card,Input,Modal, Select } from 'antd';
-import {Menu,Dropdown,Button} from 'antd';
+import { Card,Input,Modal } from 'antd';
+
 const topicsStyle = {
     width: '35%',
     height: '800px',
@@ -60,7 +60,7 @@ function SingleConstruct() {
                 //  console.log('resulttttttt',result);
                  if(result){
                     console.log('result.code',result.code);
-                    if(result.code == 200 ){
+                    if(result.code === 200 ){
                        emptyChildren(treeRef.current)
                        e.target.style.opacity = 1
                        e.target.style.color = 'green'
@@ -137,7 +137,7 @@ function SingleConstruct() {
                if(result){
                 const treeData = result.data;
                 console.log('result.code',result.code);
-                if(result.code == 200){
+                if(result.code === 200){
                      clearInterval(myvar);
                 }
                 settreeData(treeData);
@@ -158,7 +158,7 @@ function SingleConstruct() {
     // 画分面树
     useEffect(() => {
         if (treeRef && treeData) {
-            if(treeData.childrenNumber == 0){
+            if(treeData.childrenNumber === 0){
                 emptyChildren(treeRef.current); 
                 console.log('该主题下暂无数据');    
             }

@@ -5,42 +5,47 @@ import useCurrentSubjectDomainModel from '../../../../../models/current-subject-
 import { useState } from 'react';
 import YottaAPI from '../../../../../apis/yotta-api';
 import {ExclamationCircleOutlined,PlusOutlined} from '@ant-design/icons';
-import { Card,Input,Modal, Select } from 'antd';
-import {Menu,Dropdown,Button} from 'antd';
-const topicsStyle = {
-    width: '35%',
-    height: '800px',
-    overflow: 'auto',
-    textAlign: 'center',
+import { Card,Input,Modal } from 'antd';
+import {drawDyMap} from '../../../../../modules/topicDependenceVisualization_DY';
+import {drawMap} from '../../../../../modules/topicDependenceVisualization';
+const mapStyle = {
+    width:'50%',
+    position:'absolute',
+    left:'0%',
+    textAlign:'center',
+    top:'5px',
 };
 const treeStyle = {
-    width: '50%',
+    width: '47%',
     position: 'absolute',
-    left: '40%',
-    textAlign: 'center',
-    top: '5px'
+    right:'0%',
+    top:'5px',
+    height:'810px',
+    overflow: 'auto',
 };
+
 
 const {TextArea} = Input;
 const {confirm} = Modal;
 
 function BatchConstruct() {
-   // console.log('程序处于批量更新页面')
+  
     const { currentSubjectDomain } = useCurrentSubjectDomainModel();
-    const [topics, settopics] = useState([]);
-    const [topicsData,settopicsData] = useState();
+    const [topics,settopics] = useState([]);
+
+    const [topicId,settopicId] = useState();
+    const [topicList, settopicList] = useState([]);
+   
     const [currentTopic, setcurrentTopic] = useState();
-    const [treeData, settreeData] = useState();
     const textareaValueRef = useRef('');
     const [insertTopic1,setinsertTopic1] = useState();
-    const [i,seti] = useState(0);
-    // 将请求的状态码设置为全局状态
-    const statusCode = useRef();
-    // 设置一个全局的resultTree状态
-    const resultTree = useRef();
-    useEffect(() => { // 就这样改得了
-        console.log(document.querySelector(`#topicitem-${topics[0]}`));
-    }, [topics])
+    const [learningPath,setlearningPath] = useState([]);
+    const mapRef = useRef();
+    const treeRef1 = useRef();
+    const map1 = useRef();
+    const topicList1 = useRef();
+
+    const [mapdata,setmapdata] = useState();
     const handleTextareaChange= (e)=>{
         textareaValueRef.current = e.target.value;
     }
@@ -65,8 +70,6 @@ function BatchConstruct() {
                 const Topic1 = textareaValueRef.current;
                 textareaValueRef.current = '';
                 setinsertTopic1(Topic1); 
-                console.log('Topic1',Topic1);
-                
             },
             onCancel() {
                 
@@ -82,151 +85,125 @@ function BatchConstruct() {
             insert(insertTopic1);
         }
     },[insertTopic1]) 
+
     const treeRef = useRef();
     
+    // 根据课程名获取主题列表
+    useEffect(() => {
+        async function fetchTopicsData() {
+            const res = await YottaAPI.getDynamicTopics(currentSubjectDomain.subject,currentSubjectDomain.domain);
+            const topicsData = res.data.data;
+            if(topicsData){
+                let topics = topicsData.map((topic) => topic.topicName);
+                let topicsId = topicsData.map((topic) => topic.topicId);
+                let map = new Map();
+                for(let i=0;i<topics.length;i++){
+                    map.set(topics[i],topicsId[i]);
+                }
+                map1.current = map;
+                
+                settopics(topics);
+                settopicId(topicsId);
+                
+            }
+        }
+        if (currentSubjectDomain.domain) {
+            fetchTopicsData();
+        }
+    }, [currentSubjectDomain.subject,currentSubjectDomain.domain])
+   
+   
+    // 主题列表更新后，给初始主题名称赋值
     useEffect(()=>{
         setcurrentTopic(topics[0]);
     },[topics])
 
-    // useEffect(()=>{
-    //     emptyChildren(treeRef.current) 
-    //     setcurrentTopic(topics[i])
-    // },[i])
 
-    useEffect(() => {  
-        // const topicNode1 = document.getElementById('topicitem-耦合 (概率)');
-        // const topicNode2 = document.querySelector('#topicitem-重尾分布');
-        // console.log('topicNode111111111',topicNode1);
-        // console.log('topicNode222222222',topicNode2);
-        // const topicNode = document.querySelector(`#topicitem-${currentTopic}`); // 然后改它的css
-        const topicNode = document.getElementById(`topicitem-${currentTopic}`);
-        console.log('topicNode',topicNode)
-        if(topicNode){
-            console.log("style",topicNode.style)
-            let my = setInterval(() => {
-               let opacity = topicNode.style.opacity;
-               topicNode.style.opacity = 1-(+opacity||0)
-               topicNode.style.color = 'red';     
-            }, 500);
+
+
+    useEffect(() => { 
+        console.log('当前正在构建的主题名称',currentTopic); 
+        if(currentTopic){ 
+            // 动态获取数据，直至返回状态为200
             var myvar1 = setInterval(
             async function fetchTreeData() {
              if(currentSubjectDomain.domain && currentTopic) {
-                //  const result = await YottaAPI.getDynamicTreeData(currentSubjectDomain.domain,currentTopic,true);
                 const result = await YottaAPI.getDynamicMulti(currentSubjectDomain.domain,currentTopic);
-                resultTree.current = result;
-                //  const result = resultTree.current;
-                //  console.log('resulttttttt',result);
-                 if(result){
-                    console.log('result.code',result.code);
-                    if(result.code == 200 ){
-                       emptyChildren(treeRef.current)
-                       topicNode.style.opacity = 1
-                       topicNode.style.color = 'green'
-                         clearInterval(myvar1);
-                         clearInterval(my)
+                if(result){
+                    const treeData = result.data;
+                   
+                    const currentIndex = map1.current.get(currentTopic);
+                    if(result.code === 200 ){
+                       emptyChildren(treeRef.current);
+                       topicList.push(currentIndex);
+                       settopicList(topicList);
+                       topicList1.current = topicList;
+                       console.log('topicList1.current',topicList1.current);
+                       const index = topics.indexOf(currentTopic);
+                       (index < topics.length) && (setcurrentTopic(topics[index+1])); 
+                       clearInterval(myvar1);
+                       if(mapdata){
+                        emptyChildren(mapRef.current);
+                        drawDyMap(mapdata,mapRef.current,treeRef1.current,currentSubjectDomain.domain,learningPath,()=>{}, ()=>{},topicList1.current);}
+                    }
+                    else{
+                        if (treeRef && treeData) {
+                            if(treeData.childrenNumber === 0){
+                                emptyChildren(treeRef.current); 
+                                console.log('该主题下暂无数据');    
+                            }
+                            else{
+                                if(treeRef.current.childNodes.length === 0){
+                                   
+                                    drawTree(treeRef.current,treeData,d => { });
+                                 }
+                                 else if(treeRef.current.childNodes.length !== 0){
+                                    setTimeout(()=>{
+                                       
+                                        drawTreeNumber(treeRef.current, treeData, d => { });
+                                    },3000)
+                                 }
+                                 else{
+                
+                                 }
+                            }
+                        }
                     }  
                  }
+                
              }
              else{
                  clearInterval(myvar1);
              }
            },10000)
         }
-        
-       
-        var myvar = setInterval(
-                    async function fetchTreeData() {
-                     if(currentSubjectDomain.domain && currentTopic ){
-                        //  const result = await YottaAPI.getDynamicTreeData(currentSubjectDomain.domain,currentTopic,true);
-                        //  const result = await YottaAPI.getDynamicMulti(currentSubjectDomain.domain,currentTopic); 
-                        // resultTree.current = result;
-                        // console.log(resultTree.current)
-                        
-                         const result = resultTree.current;
-                         if(result){
-                            const treeData = result.data;
-                            console.log('result.code',result.code);
-                            statusCode.current = result.code
-                            console.log('statusCode',statusCode.current);
-                            const topicNode = document.getElementById(`topicitem-${currentTopic}`);
-                            if(result.code === 200 && topicNode.style.color== 'green'){
-                               clearInterval(myvar);
-                               //   let j = i+1; 
-                               //   seti(j);
-                               emptyChildren(treeRef.current);
-                               const index = topics.indexOf(currentTopic);
-                               (index < topics.length) && (setcurrentTopic(topics[index+1])); 
-                               
-                            }
-                            settreeData(treeData);
-                         }
-                         
-                     }
-                     else{
-                         clearInterval(myvar);  
-                     }  
-        },10000)
-    }, [currentTopic]);
+    },[currentTopic])
 
-    // 画分面树
-    useEffect(() => {
-        if (treeRef && treeData) {
-            if(treeData.childrenNumber == 0){
-                emptyChildren(treeRef.current); 
-                console.log('该主题下暂无数据');    
-            }
-            else{
-                if(treeRef.current.childNodes.length === 0 && statusCode.current !== 200){
-                    console.log('调用drawTree函数')
-                    drawTree(treeRef.current,treeData,d => { });
-                 }
-                 else if(treeRef.current.childNodes.length !== 0){
-                    console.log('调用drawTreeNumber函数')
-                    drawTreeNumber(treeRef.current, treeData, d => { });
-                    if(statusCode.current === 200){
-                        console.log('laaaaaaaaaaaaaaaaaa')
-                       // emptyChildren(treeRef.current)
+    // 获取一个课程下画认知关系图的数据
+    useEffect(()=>{
+        async function fetchDependencesMap(){
+            await YottaAPI.getMap(currentSubjectDomain.domain).then(
+                (res) => {
+                    if(res.data&&mapRef){
+                        console.log('res.data',res.data);
+                        setmapdata(res.data);
+                        drawDyMap(res.data,mapRef.current,treeRef1.current,currentSubjectDomain.domain,learningPath,()=>{}, ()=>{},[]);
                     }
-                 }
-                 else{
-
-                 }
-            }
+                }
+            )
         }
-    }, [treeData])
- 
-    // 获取一个课程下所有的主题数据
-    useEffect(() => {
-        async function fetchTopicsData() {
-            const res = await YottaAPI.getDynamicTopics(currentSubjectDomain.subject,currentSubjectDomain.domain);
-            const topicsData = res.data.data;
-            settopicsData(topicsData);
-            if(topicsData){
-                let topics = topicsData.map((topic) => topic.topicName);
-                console.log('qianqianqian',topics)
-                topics = topics.filter((topic)=>topic!='B+树')
-                console.log('houhouhou',topics)
-                settopics(topics)
-               // settopics(topicsData.map((topic) => topic.topicName));
-            }
-        }
-        if (currentSubjectDomain.domain) {
-            fetchTopicsData();
-        }
-    }, [insertTopic1])
-    
-   
+        fetchDependencesMap();
+    },[currentSubjectDomain.domain]);
     return (
         <>
-            <Card  extra={<PlusOutlined style={{top:'50px'}} onClick={onInsertTopic}/>} title="主题列表" style={topicsStyle}>
-                {
-                    topics.map(
-                        (topicName, index) =>
-                            (
-                                <Card.Grid style={{ width: '100%', height: '80%',opacity:1}} id={`topicitem-${topicName}`} key={index}>{topicName}</Card.Grid>
-                            )
-                    )
-                }
+           <Card title="主题间认知路径图" style={mapStyle}>
+                <div style={{ width: '100%', height: '700px' }} >
+                  <svg ref={ref => mapRef.current = ref} id='map' style={{ width: '100%',height:'100%' }}></svg>
+                           <svg ref={ref=>treeRef1.current = ref} id='tree' style={{position:'absolute',left:'0',marginLeft:30,
+            visibility: 'hidden',
+            top: 10,
+            marginTop: 56}}></svg>
+                </div>
             </Card>
             <Card title="主题分面树" style={treeStyle}>
                 <Card.Grid style={{ width: '100%', height: '730px' }} >

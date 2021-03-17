@@ -47,6 +47,11 @@ const YottaAPI = {
     async getSubjectGraph(subject){
         return await gets_8084(`subject/getSubjectGraphByName?subjectName=${encodeURI(subject)}`);
     },
+    // 获取画课程间认知关系的图
+    async getDomainGraph(domain){
+        return await posts(`dependency/getDependenciesByDomainNameSaveAsGexf?domainName=${encodeURI(domain)}`);
+        // return await gets_8084('dependency/getDependenciesByDomainNameSaveAsGexf?domainName=${encodeURI(domain)}')
+    },
     
     // 根据分面id获取碎片内容
     async getASsembleByFacetId(facetId){
@@ -113,6 +118,7 @@ const YottaAPI = {
         try{
             // result = await axios.post(`http://10.181.204.48:8083/spiderDynamicOutput/incrementalSpiderFacetAssembleTreeByDomianAndTopicName?domainName=${encodeURI(domainName)}&topicName=${encodeURI(topicName)}`)
             result = await axios.post(`http://47.95.145.72:8084/spiderDynamicOutput/incrementalSpiderFacetAssembleTreeByDomianAndTopicName?domainName=${encodeURI(domainName)}&topicName=${encodeURI(topicName)}`)
+            //  result = await axios.post(`http://10.181.58.80:8083/newSpiderFor2021/spiderTopicAndFragmentByDomainName?domainName=${encodeURI(domainName)}`)
             console.log('构建好的树数据',result.data);
             result = result.data;
         }

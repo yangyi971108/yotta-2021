@@ -9,8 +9,7 @@ import useConstructTypeModel from '../../models/construct-type';
 import useCurrentSubjectDomainModel from "../../models/current-subject-domain";
 
 import YottaAPI from '../../apis/yotta-api';
-import constructType from '../../models/construct-type';
-import currentSubjectDomain from '../../models/current-subject-domain';
+
 
 
 function HomePage() {
@@ -68,6 +67,9 @@ function HomePage() {
                 value: subject.subjectName,
                 label: subject.subjectName,
                 children: subject.domains.map(domain => {
+                    if(domain.domainName === '数据结构'){
+                        domain.domainName = '数据结构(人工)'
+                    }
                     return {
                         value: domain.domainName,
                         label: domain.domainName

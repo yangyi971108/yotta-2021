@@ -1,6 +1,6 @@
 import React from 'react';
 import classes from '../../index.module.css';
-import { drawTree,drawTreeNumber } from '../../../../modules/facetTree';
+import { drawTreeNumber } from '../../../../modules/facetTree';
 import { useEffect, useRef } from 'react';
 import useCurrentSubjectDomainModel from '../../../../models/current-subject-domain';
 import useConstructTypeModel from '../../../../models/construct-type';
@@ -37,7 +37,7 @@ function Display() {
    
     const [insertTopic1,setinsertTopic1] = useState();
     
-    const [flag,setflag] = useState();
+    
     const {confirm} = Modal;
     const {TextArea} = Input;
     console.log('hahahah',constructType);
@@ -106,7 +106,7 @@ function Display() {
               const topicsData = await YottaAPI.getTopicsByDomainName(currentSubjectDomain.domain);
             settopicsData(topicsData);
             if(topicsData){
-                setflag(topicsData.map((topic) => topic.assembleNumber));
+                
                 settopics(topicsData.map((topic) => topic.topicName));
             }
         }
