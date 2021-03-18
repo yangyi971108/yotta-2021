@@ -5,9 +5,9 @@ import useCurrentSubjectDomainModel from '../../../../../models/current-subject-
 import { useState } from 'react';
 import YottaAPI from '../../../../../apis/yotta-api';
 import {ExclamationCircleOutlined,PlusOutlined} from '@ant-design/icons';
-import { Card,Input,Modal } from 'antd';
+import { Card,Input,Modal,Alert } from 'antd';
 import {drawDyMap} from '../../../../../modules/topicDependenceVisualization_DY';
-import {drawMap} from '../../../../../modules/topicDependenceVisualization';
+
 const mapStyle = {
     width:'50%',
     position:'absolute',
@@ -44,7 +44,7 @@ function BatchConstruct() {
     const treeRef1 = useRef();
     const map1 = useRef();
     const topicList1 = useRef();
-
+    const [treeflag,settreeflag] = useState(true);
     const [mapdata,setmapdata] = useState();
     const handleTextareaChange= (e)=>{
         textareaValueRef.current = e.target.value;
@@ -139,6 +139,7 @@ function BatchConstruct() {
                        settopicList(topicList);
                        topicList1.current = topicList;
                        console.log('topicList1.current',topicList1.current);
+                       settreeflag(false);
                        const index = topics.indexOf(currentTopic);
                        (index < topics.length) && (setcurrentTopic(topics[index+1])); 
                        clearInterval(myvar1);
@@ -206,9 +207,23 @@ function BatchConstruct() {
                 </div>
             </Card>
             <Card title="主题分面树" style={treeStyle}>
-                <Card.Grid style={{ width: '100%', height: '730px' }} >
-                    <svg ref={ref => treeRef.current = ref} id='tree' style={{ width: '100%', height: '700px' }}>
-                    </svg>
+            <Card.Grid style={{ width: '100%', height: '730px' }} >
+                    {
+                        (!treeflag)?(
+                            <div ref={ref => treeRef.current = ref}>
+                            <Alert
+                            message="Informational Notes"
+                            description="该主题下暂无数据."
+                            type="info"
+                            showIcon
+                          />
+                          </div>
+                            
+                        ):(
+                            <svg ref={ref => treeRef.current = ref} id='tree' style={{ width: '100%', height: '700px' }}>
+                             </svg>
+                        )
+                    }
                 </Card.Grid>
             </Card>
 
