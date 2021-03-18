@@ -139,18 +139,19 @@ function BatchConstruct() {
                        settopicList(topicList);
                        topicList1.current = topicList;
                        console.log('topicList1.current',topicList1.current);
-                       settreeflag(false);
+                       
                        const index = topics.indexOf(currentTopic);
                        (index < topics.length) && (setcurrentTopic(topics[index+1])); 
                        clearInterval(myvar1);
                        if(mapdata){
                         emptyChildren(mapRef.current);
-                        drawDyMap(mapdata,mapRef.current,treeRef1.current,currentSubjectDomain.domain,learningPath,()=>{}, ()=>{},topicList1.current);}
+                        drawDyMap(mapdata,mapRef.current,treeRef1.current,currentSubjectDomain.domain,learningPath,()=>{}, ()=>{},topicList);}
                     }
                     else{
                         if (treeRef && treeData) {
                             if(treeData.childrenNumber === 0){
                                 emptyChildren(treeRef.current); 
+                                settreeflag(false);
                                 console.log('该主题下暂无数据');    
                             }
                             else{
@@ -188,7 +189,7 @@ function BatchConstruct() {
                     if(res.data&&mapRef){
                         console.log('res.data',res.data);
                         setmapdata(res.data);
-                        drawDyMap(res.data,mapRef.current,treeRef1.current,currentSubjectDomain.domain,learningPath,()=>{}, ()=>{},[]);
+                        drawDyMap(res.data,mapRef.current,treeRef1.current,currentSubjectDomain.domain,learningPath,()=>{}, ()=>{},topicList);
                     }
                 }
             )
@@ -210,13 +211,13 @@ function BatchConstruct() {
             <Card.Grid style={{ width: '100%', height: '730px' }} >
                     {
                         (!treeflag)?(
-                            <div ref={ref => treeRef.current = ref}>
+                          <div ref={ref => treeRef.current = ref}>
                             <Alert
                             message="Informational Notes"
                             description="该主题下暂无数据."
                             type="info"
                             showIcon
-                          />
+                            />
                           </div>
                             
                         ):(

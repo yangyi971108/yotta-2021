@@ -90,7 +90,7 @@ function BatchConstruct2() {
                        emptyChildren(treeRef.current);
                        topicList.push(currentTopic);
                        settopicList(topicList);
-                      
+                       settreeflag(false);
                        console.log('topicList',topicList);
                      
                        const index = topics.indexOf(currentTopic);
@@ -101,7 +101,7 @@ function BatchConstruct2() {
                         if (treeRef && treeData) {
                             if(treeData.childrenNumber === 0){
                                 emptyChildren(treeRef.current); 
-                                settreeflag(false);
+                               
                                 console.log('该主题下暂无数据');    
                             }
                             else{
